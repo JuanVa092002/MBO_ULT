@@ -3,12 +3,14 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mesa_servicio_ctpi/models/usuario_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mesa_servicio_ctpi/widgets/appBar_widget.dart';
 import 'package:mesa_servicio_ctpi/controllers/request_controller.dart'; // Asegúrate de importar tu controlador
 
 class HomeOfficerScreen extends StatefulWidget {
-  const HomeOfficerScreen({super.key});
+  final Usuario usuario;
+  const HomeOfficerScreen({super.key, required this.usuario});
 
   @override
   State<HomeOfficerScreen> createState() => _HomeOfficerScreenState();
@@ -123,7 +125,7 @@ class _HomeOfficerScreenState extends State<HomeOfficerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const PreferredSize(preferredSize: Size.fromHeight(100), child: AppbarWidget()),
+      appBar: PreferredSize(preferredSize: Size.fromHeight(100), child: AppbarWidget(usuario:widget.usuario ,)),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(

@@ -4,13 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:mesa_servicio_ctpi/controllers/solution_controller.dart';
+import 'package:mesa_servicio_ctpi/models/usuario_model.dart';
 import 'package:mesa_servicio_ctpi/screens/home_tecnico_screen.dart';
 import 'package:mesa_servicio_ctpi/widgets/appBar_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FormRequestScreen extends StatefulWidget {
-    final String idSolicitud;
-  const FormRequestScreen({super.key, required this.idSolicitud});
+  final Usuario usuario;
+  final String idSolicitud;
+  const FormRequestScreen(
+      {super.key, required this.idSolicitud, required this.usuario});
 
   @override
   State<FormRequestScreen> createState() => _FormRequestScreenState();
@@ -20,14 +23,14 @@ class _FormRequestScreenState extends State<FormRequestScreen> {
   final _descripcionController = TextEditingController();
   final List<String> _estados = ['pendiente', 'finalizado'];
   String? _selectedEstado;
-  String?_tiposCaso;
+  String? _tiposCaso;
   List<dynamic> _tiposDeCaso = [];
   bool _isLoadingTiposDeCaso = true;
   String _errorMessage = '';
   File? _fotoFile;
   final _formKey = GlobalKey<FormState>();
-  final SolucionCasoController _solucionCasoController = SolucionCasoController();
-
+  final SolucionCasoController _solucionCasoController =
+      SolucionCasoController();
 
   @override
   void initState() {
@@ -41,11 +44,10 @@ class _FormRequestScreenState extends State<FormRequestScreen> {
   }
 
   @override
-  void dispose(){
+  void dispose() {
     _descripcionController.dispose();
     super.dispose();
   }
-
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -60,7 +62,8 @@ class _FormRequestScreenState extends State<FormRequestScreen> {
       }
 
       final response = await http.get(
-        Uri.parse('https://backendnodeproyectomesaservicio.onrender.com/api/tipoCaso'),
+        Uri.parse(
+            'https://backendnodeproyectomesaservicio.onrender.com/api/tipoCaso'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -97,40 +100,16 @@ class _FormRequestScreenState extends State<FormRequestScreen> {
     }
   }
 
-  Future<void> _enviarSolucion() async {
-  if (_formKey.currentState!.validate()) {
-    try {
-      final result = await _solucionCasoController.enviarSolucionCaso(
-        idSolicitud: widget.idSolicitud, // ID de la solicitud pasado como parámetro
-        descripcionSolucion: _descripcionController.text,
-        tipoCaso: _tiposCaso!,
-        tipoSolucion: _selectedEstado!,
-        evidencia: _fotoFile != null ? XFile(_fotoFile!.path) : null,
-      );
-
-      if (result != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result)), // Mensaje de éxito
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error al enviar la solución')),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al enviar la solución: $e')),
-      );
-    }
-  }
-}
-  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    appBar: const PreferredSize(preferredSize: Size.fromHeight(100), child: AppbarWidget()), 
-    body: SingleChildScrollView(
+      appBar: PreferredSize(
+          preferredSize: Size.fromHeight(100),
+          child: AppbarWidget(
+            usuario: widget.usuario,
+          )),
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.only(top: 300),
           child: Center(
@@ -196,7 +175,8 @@ class _FormRequestScreenState extends State<FormRequestScreen> {
                             ? Center(child: Text(_errorMessage))
                             : DropdownButtonFormField<String>(
                                 value: _tiposCaso,
-                                items: _tiposDeCaso.map<DropdownMenuItem<String>>((tipoCaso) {
+                                items: _tiposDeCaso
+                                    .map<DropdownMenuItem<String>>((tipoCaso) {
                                   return DropdownMenuItem<String>(
                                     value: tipoCaso['_id'].toString(),
                                     child: Text(tipoCaso['nombre']),
@@ -209,7 +189,8 @@ class _FormRequestScreenState extends State<FormRequestScreen> {
                                 },
                                 decoration: InputDecoration(
                                   filled: true,
-                                  fillColor: const Color.fromRGBO(255, 254, 254, 1),
+                                  fillColor:
+                                      const Color.fromRGBO(255, 254, 254, 1),
                                   hintStyle: const TextStyle(fontSize: 15),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(20),
@@ -293,7 +274,8 @@ class _FormRequestScreenState extends State<FormRequestScreen> {
                         elevation: 2,
                         foregroundColor: Colors.white,
                         backgroundColor: const Color.fromRGBO(57, 169, 0, 1),
-                        padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 50, vertical: 15),
                         textStyle: const TextStyle(
                           color: Colors.black45,
                           fontSize: 18,
@@ -304,32 +286,61 @@ class _FormRequestScreenState extends State<FormRequestScreen> {
                     ),
                     const SizedBox(height: 16.0),
                     ElevatedButton(
-                      onPressed: ()  {
-                      // Asegúrate de que todos los datos están listos para ser enviados
-                      print(widget.idSolicitud);
-                      print(_selectedEstado);
-                      print(_tiposCaso);
-                      print(_descripcionController.text);  
-                      _enviarSolucion();
-                      // Redirige al usuario a la pantalla anterior
+                      onPressed: () async {
+                        // Asegúrate de que todos los datos están listos para ser enviados
+                        print(widget.idSolicitud);
+                        print(_selectedEstado);
+                        print(_tiposCaso);
+                        print(_descripcionController.text);
+                        if (_formKey.currentState!.validate()) {
+                        try {
+                          final result = await _solucionCasoController.enviarSolucionCaso(
+                            idSolicitud: widget.idSolicitud, // ID de la solicitud pasado como parámetro
+                            descripcionSolucion: _descripcionController.text,
+                            tipoCaso: _tiposCaso!,
+                            tipoSolucion: _selectedEstado!,
+                            evidencia: _fotoFile != null ? XFile(_fotoFile!.path) : null,
+                          );
+
+                          if (mounted) { // Verificar si el widget sigue montado antes de usar context
+                            if (result != null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(result)), // Mensaje de éxito
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Error al enviar la solución')),
+                              );
+                            }
+                          }
+                        } catch (e) {
+                          if (mounted) { // Verificar si el widget sigue montado antes de usar context
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error al enviar la solución: $e')),
+                            );
+                          }
+                        }
+                      }
+                        // Redirige al usuario a la pantalla anterior
                       Navigator.pushAndRemoveUntil(
                         context,
-                        MaterialPageRoute(builder: (context) => const HomeTechnicianScreen()),
+                        MaterialPageRoute(builder: (context) =>HomeTechnicianScreen(usuario: widget.usuario,)),
                         (Route<dynamic> route) => false,
                       );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      elevation: 2,
-                      foregroundColor: Colors.white,
-                      backgroundColor: const Color.fromRGBO(0, 50, 77, 1),
-                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                      textStyle: const TextStyle(
-                        color: Colors.black45,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                      },
+                      style: ElevatedButton.styleFrom(
+                        elevation: 2,
+                        foregroundColor: Colors.white,
+                        backgroundColor: const Color.fromRGBO(0, 50, 77, 1),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 50, vertical: 15),
+                        textStyle: const TextStyle(
+                          color: Colors.black45,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                    child: const Text('Dar Solución'),
+                      child: const Text('Dar Solución'),
                     )
                   ],
                 ),

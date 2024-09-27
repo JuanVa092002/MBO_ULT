@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mesa_servicio_ctpi/controllers/request_controller.dart';
+import 'package:mesa_servicio_ctpi/models/usuario_model.dart';
 import 'package:mesa_servicio_ctpi/screens/form_request_screen.dart';
 import 'package:mesa_servicio_ctpi/widgets/appBar_widget.dart';
 
 class HomeTechnicianScreen extends StatefulWidget {
-  const HomeTechnicianScreen({super.key});
+  final Usuario usuario;
+  const HomeTechnicianScreen({super.key, required this.usuario});
 
   @override
   State<HomeTechnicianScreen> createState() => _HomeTechnicianScreenState();
@@ -44,7 +46,7 @@ class _HomeTechnicianScreenState extends State<HomeTechnicianScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:const PreferredSize(preferredSize: Size.fromHeight(100), child: AppbarWidget()), // Se instancia el widget AppBarWidget
+      appBar: PreferredSize(preferredSize: Size.fromHeight(100), child: AppbarWidget(usuario: widget.usuario ,)), // Se instancia el widget AppBarWidget
       body: FutureBuilder<List<dynamic>>(
         future: _assignedRequests,
         builder: (context, snapshot) {
@@ -105,7 +107,7 @@ class _HomeTechnicianScreenState extends State<HomeTechnicianScreen> {
                                   onPressed: () {
                                     Navigator.push(
                                       context, 
-                                      MaterialPageRoute(builder: (context) => FormRequestScreen(idSolicitud: request['_id'])),
+                                      MaterialPageRoute(builder: (context) => FormRequestScreen(idSolicitud: request['_id'], usuario: widget.usuario,)),
                                     );
                                   },
                                   style: ElevatedButton.styleFrom(

@@ -29,11 +29,8 @@ Future<Map<String, dynamic>> fetchUser(String token, String id) async {
   if (response.statusCode == 200) {
     final data = json.decode(response.body);
     // Verifica si 'data' está presente en la respuesta
-    if (data.containsKey('data')) {
-      return data['data'];
-    } else {
-      throw Exception('Data field missing in response');
-    }
+    return data;
+    
   } else {
     throw Exception('Failed to load user: ${response.reasonPhrase}');
   }

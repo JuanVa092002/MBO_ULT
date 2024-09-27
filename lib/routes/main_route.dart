@@ -11,10 +11,10 @@ Map<String, WidgetBuilder> MainRoute() {
   return {
     '/login': (context) => const LoginScreen(),
     '/register': (context) => const RegisterScreen(),
-    '/homeofficial': (context) =>   const HomeOfficerScreen(),
-    '/hometechnician': (context) => const HomeTechnicianScreen(),
-    '/profile': (context) => const ProfileScreen(),
-    '/solution': (context) => FormRequestScreen(idSolicitud: ModalRoute.of(context)!.settings.arguments as String),
+    // '/homeofficial': (context) =>   const HomeOfficerScreen(),
+    // '/hometechnician': (context) => const HomeTechnicianScreen(),
+    // '/profile': (context) => const ProfileScreen(),
+    // '/solution': (context) => FormRequestScreen(idSolicitud: ModalRoute.of(context)!.settings.arguments as String),
   };
 }
 

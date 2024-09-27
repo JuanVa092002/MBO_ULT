@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:mesa_servicio_ctpi/controllers/profile_controller.dart';
+// import 'package:mesa_servicio_ctpi/controllers/profile_controller.dart';
+import 'package:mesa_servicio_ctpi/models/usuario_model.dart';
 import 'package:mesa_servicio_ctpi/screens/login_screen.dart';
+import 'package:mesa_servicio_ctpi/screens/profile_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppbarWidget extends StatefulWidget {
-  const AppbarWidget({super.key});
+  final Usuario usuario;
+  const AppbarWidget({super.key, required this.usuario});
 
   @override
   State<AppbarWidget> createState() => _AppbarWidgetState();
@@ -14,38 +17,13 @@ class AppbarWidget extends StatefulWidget {
 Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 class _AppbarWidgetState extends State<AppbarWidget> {
 
-  String? _nombreUsuario;
-  String? _fotoUsuario;
-  String? _error;
-
+  late Usuario usuario;
   @override
      void initState() {
     super.initState();
-    _loadUsuario();
+    usuario = widget.usuario;
   }
-    Future<void> _loadUsuario() async {
-    try {
-      String? token = await _getToken();
-      if (token != null) {
-        Map<String, dynamic>? userProfile = await fetchUserProfile(token);
-
-        if (userProfile != null) {
-          setState(() {
-            _nombreUsuario = userProfile['nombre']?.toString() ?? 'Usuario';
-            _fotoUsuario = userProfile['foto']?.toString();
-          });
-        } else {
-          setState(() {
-            _error = 'Perfil de usuario no disponible';
-          });
-        }
-      }
-    } catch (e) {
-      setState(() {
-        _error = 'Error al cargar la información del usuario: $e';
-      });
-    }
-  }
+  
   
   // Obtener el token almacenado en SharedPreferences
   Future<String?> _getToken() async {
@@ -68,7 +46,7 @@ class _AppbarWidgetState extends State<AppbarWidget> {
             fit: BoxFit.contain,
           ),
         ),
-        title: Text('Hola, ${_nombreUsuario ?? "Usuario"}',style: const TextStyle(
+        title: Text('Hola, ${usuario.nombre}',style: const TextStyle(
           color: Colors.black,
           fontSize: 22,
           fontWeight: FontWeight.w700,
@@ -76,25 +54,32 @@ class _AppbarWidgetState extends State<AppbarWidget> {
         actions: [
           Row(
             children: [
-              if (_fotoUsuario != null && Uri.tryParse(_fotoUsuario!)?.isAbsolute == true)
+              
                 GestureDetector(
                   onTap: () {
-                    Navigator.pushNamed(context, '/profile');
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => ProfileScreen(usuario: usuario,)),
+                      (route) => false, // Esto elimina todas las rutas anteriores
+                    );
                   },
-                  child: CircleAvatar(
-                    backgroundImage: NetworkImage(_fotoUsuario!),
+                  child:
+                  CircleAvatar(
                     backgroundColor: Colors.green,
-                  ),
-                )
-              else
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/profile');
-                  },
-                  child: const CircleAvatar(
-                    child: Icon(Icons.person, color: Colors.white),
-                  ),
+                    child: Icon(Icons.person),
+                  )
+
+                  // CircleAvatar(
+                  //   backgroundImage: (usuario.foto != null && usuario.foto!.url.isNotEmpty)
+                  //       ? NetworkImage(usuario.foto!.url)
+                  //       : null, // Si no hay imagen, dejamos null para usar el icono
+                  //   // backgroundColor: Colors.green,
+                  //   child: (usuario.foto == null || usuario.foto!.url.isEmpty)
+                  //       ? Icon(Icons.person, size: 40, color: Colors.white) // Icono de persona por defecto
+                  //       : null, // No se muestra nada si hay imagen
+                  // ),
                 ),
+                
               IconButton(
                 onPressed: () {
                   Navigator.pushAndRemoveUntil(

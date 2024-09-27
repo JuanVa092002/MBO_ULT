@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SolucionCasoController {
+  final String baseUrl = "https://backendnodeproyectomesaservicio.onrender.com/api";
+
   Future<String?> enviarSolucionCaso({
     required String idSolicitud,
     required String descripcionSolucion,
@@ -11,35 +13,32 @@ class SolucionCasoController {
     required String tipoSolucion,
     XFile? evidencia,
   }) async {
-    const String baseUrl = "https://backendnodeproyectomesaservicio.onrender.com/api"; // Reemplaza con tu URL
-    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/solucionCaso/$idSolicitud'));
-
-    final token = await _getToken(); // Método para obtener el token, similar al que tienes en la pantalla
-
-    if (token == null) {
-      throw Exception('Token de autenticación no disponible');
-    }
-
-    request.headers['Authorization'] = 'Bearer $token';
-    request.fields['descripcionSolucion'] = descripcionSolucion;
-    request.fields['tipoCaso'] = tipoCaso;
-    request.fields['tipoSolucion'] = tipoSolucion;
-
-    if (evidencia != null) {
-      request.files.add(await http.MultipartFile.fromPath('evidencia', evidencia.path));
-    }
+    final token = await _getToken();
+    if (token == null) throw Exception('Token de autenticación no disponible');
 
     try {
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
+      // Crear la solicitud multipart
+      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/solucionCaso/$idSolicitud'))
+        ..headers['Authorization'] = 'Bearer $token'
+        ..fields.addAll({
+          'descripcionSolucion': descripcionSolucion,
+          'tipoCaso': tipoCaso,
+          'tipoSolucion': tipoSolucion,
+        });
 
+      if (evidencia != null) {
+        request.files.add(await http.MultipartFile.fromPath('evidencia', evidencia.path));
+      }
+
+      // Enviar la solicitud
+      final response = await http.Response.fromStream(await request.send());
+
+      // Verificar el estado de la respuesta
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-        print('Caso actualizado correctamente');
-        print(responseData);
         return responseData['message'];
       } else {
-        print('Error al actualizar el caso: ${response.body}');
+        print('Error: ${response.body}');
         return null;
       }
     } catch (e) {

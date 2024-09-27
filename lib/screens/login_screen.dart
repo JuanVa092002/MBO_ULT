@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mesa_servicio_ctpi/controllers/profile_controller.dart';
+import 'package:mesa_servicio_ctpi/models/usuario_model.dart';
+import 'package:mesa_servicio_ctpi/screens/home_tecnico_screen.dart';
 import 'package:mesa_servicio_ctpi/widgets/forgot_modal_widget.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,13 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
     await prefs.setString('token', token);
   }
 
-  void handleLoginSuccess(String role) {
-    if (role == 'tecnico') {
-      Navigator.pushReplacementNamed(context, '/hometechnician');
-    } else if (role == 'funcionario') {
-      Navigator.pushReplacementNamed(context, '/homeofficial');
-    }
-  }
+  
 
   // Función para realizar el login
   Future<void> _login() async {
@@ -46,26 +43,40 @@ class _LoginScreenState extends State<LoginScreen> {
 
       try {
         final response = await http.post(
-          Uri.parse('https://backendnodeproyectomesaservicio.onrender.com/api/auth/login'), // Cambia la URL por la de tu backend
+          Uri.parse('https://backendnodeproyectomesaservicio.onrender.com/api/auth/login'), 
           headers: {'Content-Type': 'application/json'},
           body: json.encode({'correo': correo, 'password': password}),
         );
 
-        if (response.statusCode == 200 && response.body.isNotEmpty) {
+        if (response.statusCode == 200) {
           final data = json.decode(response.body);
-          if (data.containsKey('dataUser') && data['dataUser'].containsKey('token')) {
+
+            print(data['dataUser']['user']);
+            final String idUser = data['dataUser']['user']['_id'];
+            // final String idUser = data['datauser']['user']['_id'];
+            // print('id de usuario logueado $idUser');
+            // print('id de usuario logueado: ${data['datauser']['user']['_id']}');
             final String token = data['dataUser']['token'];
             final String role = data['dataUser']['user']['rol'];
 
             await _saveToken(token); // Guardar el token
-
-            handleLoginSuccess(role); // Redirigir basado en el rol
-          } else {
-            // Manejar el caso donde la estructura JSON no es la esperada
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Error en la respuesta del servidor.')),
+            final usuarioData = await fetchUser(token, idUser);
+            print(usuarioData['data']);
+            Usuario usuario = Usuario.fromJson(usuarioData['data']);
+            print('Usuario creado: ${usuario.nombre}, ${usuario.correo}, ${usuario.rol}');
+            
+              
+            
+          if (usuario.rol == 'tecnico') {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => HomeTechnicianScreen(usuario: usuario,)),
+              (route) => false, // Esto elimina todas las rutas anteriores
             );
+          } else if (role == 'funcionario') {
+            Navigator.pushReplacementNamed(context, '/homeofficial');
           }
+        
         } else {
           // Manejo de errores, por ejemplo, credenciales incorrectas
           ScaffoldMessenger.of(context).showSnackBar(

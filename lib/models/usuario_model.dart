@@ -1,47 +1,40 @@
+import 'package:mesa_servicio_ctpi/models/storage_model.dart';
+
 class Usuario {
-  final String? id; 
+  final String id;
   final String nombre;
   final String correo;
+  final String? password; // Esto puede ser nulo
   final String rol;
   final String telefono;
-  final String? password; 
+  final bool activo;
   final bool estado;
-  final String? foto; 
+  final Storage? foto; // Esto puede ser nulo si la foto no existe
 
   Usuario({
-    this.id,
+    required this.id,
     required this.nombre,
     required this.correo,
+    this.password, 
     required this.rol,
     required this.telefono,
-    required this.password, 
-    this.estado = false, 
-    this.foto,
+    required this.activo,
+    required this.estado,
+    this.foto, // Es opcional
   });
 
   // Método para convertir un JSON en un objeto Usuario
   factory Usuario.fromJson(Map<String, dynamic> json) {
     return Usuario(
-      id: json['_id'] as String?,
-      nombre: json['nombre'] as String? ?? '', // Proporciona valor predeterminado si es null
-      correo: json['correo'] as String? ?? '', // Proporciona valor predeterminado si es null
-      rol: json['rol'] as String? ?? '', // Proporciona valor predeterminado si es null
-      telefono: json['telefono'] as String? ?? '', // Proporciona valor predeterminado si es null
-      password: json['password'] as String?,
-      estado: json['estado'] ?? false,
-      foto: json['foto'] as String?,
+      id: json['_id'] ?? '', // Valor predeterminado vacío si es null
+      nombre: json['nombre'] ?? 'No name', // Valor predeterminado si es null
+      correo: json['correo'] ?? 'No email', // Valor predeterminado si es null
+      password: json['password'], // Puede ser nulo
+      rol: json['rol'] ?? 'No role', // Valor predeterminado si es null
+      telefono: json['telefono'] ?? 'No phone', // Valor predeterminado si es null
+      activo: json['activo'] ?? false, // Valor predeterminado si es null
+      estado: json['estado'] ?? false, // Valor predeterminado si es null
+      foto: json['foto'] != null ? Storage.fromJson(json['foto']) : null, // Verifica si hay una foto
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'nombre': nombre,
-      'correo': correo,
-      'rol': rol,
-      'telefono': telefono,
-      'password': password,
-      'estado': estado,
-      'foto': foto,
-    };
   }
 }
