@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mesa_servicio_ctpi/controllers/request_controller.dart';
 import 'package:mesa_servicio_ctpi/models/usuario_model.dart';
 import 'package:mesa_servicio_ctpi/screens/form_request_screen.dart';
+import 'package:mesa_servicio_ctpi/screens/informe_request_screen.dart';
 import 'package:mesa_servicio_ctpi/widgets/appBar_widget.dart';
 
 class HomeTechnicianScreen extends StatefulWidget {
@@ -22,7 +23,6 @@ class _HomeTechnicianScreenState extends State<HomeTechnicianScreen> {
     super.initState();
     _assignedRequests = _loadAssignedRequests();
   }
-
 
   @override
   void didChangeDependencies() {
@@ -46,7 +46,10 @@ class _HomeTechnicianScreenState extends State<HomeTechnicianScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(preferredSize: Size.fromHeight(100), child: AppbarWidget(usuario: widget.usuario ,)), // Se instancia el widget AppBarWidget
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(100),
+        child: AppbarWidget(usuario: widget.usuario),
+      ), // Se instancia el widget AppBarWidget
       body: FutureBuilder<List<dynamic>>(
         future: _assignedRequests,
         builder: (context, snapshot) {
@@ -55,11 +58,16 @@ class _HomeTechnicianScreenState extends State<HomeTechnicianScreen> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No hay solicitudes asignadas',style: TextStyle(
-              color: Colors.black45,
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-            )));
+            return const Center(
+              child: Text(
+                'No hay solicitudes asignadas',
+                style: TextStyle(
+                  color: Colors.black45,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            );
           } else {
             // Construir la lista de solicitudes
             return ListView.builder(
@@ -69,64 +77,108 @@ class _HomeTechnicianScreenState extends State<HomeTechnicianScreen> {
                 final estado = request['estado'] ?? 'Sin estado';
                 return Card(
                   key: ValueKey(request['_id']),
-                  margin: const EdgeInsets.all(8.0),
+                  margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                   elevation: 4.0,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(request['descripcion'] ?? 'Sin descripción',style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                              ),),
-                              Text(request['usuario']?['nombre'] ?? 'Sin nombre',style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                              ),),
-                              Text(request['fecha'] ?? 'Sin fecha',style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                              ),),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text('Estado: $estado'),
-                              if (estado == 'asignado' || estado == 'pendiente')
-                                ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context, 
-                                      MaterialPageRoute(builder: (context) => FormRequestScreen(idSolicitud: request['_id'], usuario: widget.usuario,)),
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    elevation: 2,
-                                    foregroundColor: Colors.white,
-                                    backgroundColor: estado == 'pendiente' ? const Color .fromRGBO(186, 16, 8, 1)
-                                     : const Color.fromRGBO(57, 169, 0, 1),
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
-                                    textStyle: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12), // Esquinas redondeadas
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context, 
+                        MaterialPageRoute(builder: (context) => InformeRequestScreen(solicitudId: request['_id'], usuario: widget.usuario,)),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(0), // Eliminar padding del botón
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  request['descripcion'] ?? 'Sin descripción',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color.fromRGBO(0, 50, 77, 1),
                                   ),
-                                  child: const Text('Dar Solución'),
                                 ),
-                            ],
+                                const SizedBox(height: 4),
+                                Text(
+                                  request['usuario']?['nombre'] ?? 'Sin nombre',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color.fromRGBO(57, 169, 0, 1),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  request['fecha'] ?? 'Sin fecha',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                          Expanded(
+                            flex: 1,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  estado,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color.fromRGBO(0, 50, 77, 1),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                if (estado == 'asignado' || estado == 'pendiente')
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context, 
+                                        MaterialPageRoute(
+                                          builder: (context) => FormRequestScreen(
+                                            idSolicitud: request['_id'],
+                                            usuario: widget.usuario,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      elevation: 2,
+                                      foregroundColor: Colors.white,
+                                      backgroundColor: estado == 'pendiente'
+                                          ? const Color.fromRGBO(186, 16, 8, 1)
+                                          : const Color.fromRGBO(57, 169, 0, 1),
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      textStyle: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    child: const Text('Dar Solución'),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -142,9 +194,8 @@ class _HomeTechnicianScreenState extends State<HomeTechnicianScreen> {
             _assignedRequests = _loadAssignedRequests();
           });
         },
-        child: const Icon(Icons.refresh,color: Color.fromRGBO(57, 169, 0, 1),),
+        child: const Icon(Icons.refresh, color: Color.fromRGBO(0, 50, 77, 1)),
       ),
     );
   }
 }
-

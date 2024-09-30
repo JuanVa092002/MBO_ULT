@@ -29,31 +29,31 @@ class Solicitud {
 
   factory Solicitud.fromJson(Map<String, dynamic> json) {
     return Solicitud(
-      id: json['id'],
-      descripcion: json['descripcion'],
-      fecha: json['fecha'],
-      estado: json['estado'],
-      usuario: json['usuario'],
-      ambiente: json['ambiente'],
-      tecnico: json['tecnico'],
-      codigoCaso: json['codigoCaso'],
-      telefono: json['telefono'],
-      foto: json['foto'],
+      id: json['_id'] ?? '', // Asegúrate de usar el campo correcto
+      descripcion: json['descripcion'] ?? '',
+      fecha: json['fecha'] ?? '',
+      estado: json['estado'] ?? '',
+      usuario: Usuario.fromJson(json['usuario'] ?? {}), // Manejo de nulos
+      ambiente: Ambiente.fromJson(json['ambiente'] ?? {}), // Manejo de nulos
+      tecnico: Usuario.fromJson(json['tecnico'] ?? {}), // Manejo de nulos
+      codigoCaso: json['codigoCaso'] ?? '',
+      telefono: json['telefono'] ?? '',
+      foto: json['foto'] != null ? Storage.fromJson(json['foto']) : null, // Asegúrate de manejar el null
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      '_id': id, // Asegúrate de usar el campo correcto
       'descripcion': descripcion,
       'fecha': fecha,
       'estado': estado,
-      'usuario': usuario,
-      'ambiente': ambiente,
-      'tecnico': tecnico,
+      'usuario': usuario.toJson(), // Asegúrate de que el modelo Usuario tenga toJson
+      'ambiente': ambiente.toJson(), // Asegúrate de que el modelo Ambiente tenga toJson
+      'tecnico': tecnico.toJson(), // Asegúrate de que el modelo Usuario tenga toJson
       'telefono': telefono,
       'codigoCaso': codigoCaso,
-      'foto': foto,
+      'foto': foto?.toJson(), // Manejo seguro del posible null
     };
   }
 }

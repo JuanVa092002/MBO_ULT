@@ -37,4 +37,15 @@ class Usuario {
       foto: json['foto'] != null ? Storage.fromJson(json['foto']) : null, // Verifica si hay una foto
     );
   }
+   Map<String, dynamic> toJson() {
+    return {
+      'nombre': nombre,
+      'correo': correo,
+      'rol': rol,
+      'telefono': telefono,
+      'password': password,
+      'estado': estado,
+      'foto': foto,
+    };
+  }
 }
